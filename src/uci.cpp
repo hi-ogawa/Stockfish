@@ -32,6 +32,10 @@
 #include "uci.h"
 #include "syzygy/tbprobe.h"
 
+#ifdef __EMSCRIPTEN__
+#include "emscripten/utils.h"
+#endif
+
 using namespace std;
 
 extern vector<string> setup_bench(const Position&, istream&);
@@ -238,8 +242,12 @@ void UCI::loop(int argc, char* argv[]) {
       cmd += std::string(argv[i]) + " ";
 
   do {
-      if (argc == 1 && !getline(cin, cmd)) // Block here waiting for input or EOF
-          cmd = "quit";
+      #ifdef __EMSCRIPTEN__
+        emscripten_utils_getline(cmd);
+      #else
+        if (argc == 1 && !getline(cin, cmd)) // Block here waiting for input or EOF
+            cmd = "quit";
+      #endif
 
       istringstream is(cmd);
 
@@ -279,6 +287,10 @@ void UCI::loop(int argc, char* argv[]) {
           sync_cout << "Unknown command: " << cmd << sync_endl;
 
   } while (token != "quit" && argc == 1); // Command line args are one-shot
+
+  #ifdef __EMSCRIPTEN__
+    emscripten_force_exit(0);
+  #endif
 }
 
 

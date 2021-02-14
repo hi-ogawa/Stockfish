@@ -1,0 +1,41 @@
+EXE = stockfish.js
+COMP = em++
+CXX = em++
+comp = clang
+arch = wasm
+bits = 64
+VPATH := $(VPATH):emscripten
+SRCS += emscripten/embedded_nnue.cpp
+EM_FLAGS += \
+	--pre-js emscripten/preample.js \
+	-s MODULARIZE=1 -s EXPORT_NAME="Stockfish" -s ENVIRONMENT=web,worker,node \
+	-s STRICT=1 \
+	-s ASYNCIFY=1 -s 'ASYNCIFY_IMPORTS=["emscripten_utils_getline_impl"]' \
+	-s USE_PTHREADS=1 \
+	-s PROXY_TO_PTHREAD=1 \
+	-s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=$$((1 << 27)) -s MAXIMUM_MEMORY=$$((1 << 31)) \
+	-s FILESYSTEM=0 \
+	-s ASSERTIONS=0
+
+ifeq ($(minify_js),no)
+	EM_FLAGS += --closure 0 --minify 0
+endif
+
+ifeq ($(wasm_simd_post_mvp),yes)
+	EM_FLAGS += -DUSE_WASM_SIMD -DUSE_WASM_SIMD_POST_MVP -msimd128
+	SRCS += emscripten/wasm_simd.cpp
+else ifeq ($(wasm_simd),yes)
+	EM_FLAGS += -DUSE_WASM_SIMD -msimd128
+	SRCS += emscripten/wasm_simd.cpp
+endif
+
+EXTRACXXFLAGS += -DUSE_POPCNT $(EM_FLAGS)
+
+emscripten/embedded_nnue.cpp: net
+	@echo "-- Generate embedded_nnue.cpp --"
+	python emscripten/embedded_nnue.py $(nnuenet) > emscripten/embedded_nnue.cpp
+
+emscripten_build: build
+	mkdir -p emscripten/dist
+	cp emscripten/uci.js stockfish.js stockfish.wasm emscripten/dist
+	cat stockfish.worker.js emscripten/worker-postamble.js > emscripten/dist/stockfish.worker.js
