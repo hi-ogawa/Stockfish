@@ -1,3 +1,11 @@
+## Stockfish NNUE JS
+
+See [src/emscripten/README.md](src/emscripten/README.md)
+
+---
+
+## --- Original README.md ---
+
 ## Overview
 
 [![Build Status](https://travis-ci.org/official-stockfish/Stockfish.svg?branch=master)](https://travis-ci.org/official-stockfish/Stockfish)
