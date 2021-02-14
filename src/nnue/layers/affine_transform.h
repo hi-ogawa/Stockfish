@@ -115,6 +115,22 @@ namespace Stockfish::Eval::NNUE::Layers {
       const auto input = previousLayer.propagate(
           transformedFeatures, buffer + SelfBufferSize);
 
+#if defined(USE_WASM_SIMD)
+      {
+        // Simplify variable names (y = Ax + b)
+        static_assert(kInputDimensions % 16 == 0);
+        static_assert(kInputDimensions == kPaddedInputDimensions);
+        constexpr int n = kInputDimensions;
+        constexpr int m = kOutputDimensions;
+        auto A = *reinterpret_cast<const int8_t(*)[m][n]>(weights_);
+        auto x = *reinterpret_cast<const uint8_t(*)[n]>(input);
+        auto b = *reinterpret_cast<const int32_t(*)[m]>(biases_);
+        auto y = *reinterpret_cast<int32_t(*)[m]>(buffer);
+        emscripten_wasm_simd::affine<n, m>(A, x, b, y);
+        return y;
+      }
+#endif
+
 #if defined (USE_AVX512)
 
       [[maybe_unused]] const __m512i Ones512 = _mm512_set1_epi16(1);

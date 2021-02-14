@@ -35,7 +35,6 @@
 #include "thread.h"
 #include "timeman.h"
 #include "uci.h"
-#include "incbin/incbin.h"
 
 
 // Macro to embed the default efficiently updatable neural network (NNUE) file
@@ -46,7 +45,12 @@
 //     const unsigned int         gEmbeddedNNUESize;    // the size of the embedded file
 // Note that this does not work in Microsoft Visual Studio.
 #if !defined(_MSC_VER) && !defined(NNUE_EMBEDDING_OFF)
-  INCBIN(EmbeddedNNUE, EvalFileDefaultName);
+  #if defined(__EMSCRIPTEN__)
+    #include "emscripten/embedded_nnue.h"
+  #else
+    #include "incbin/incbin.h"
+    INCBIN(EmbeddedNNUE, EvalFileDefaultName);
+  #endif
 #else
   const unsigned char        gEmbeddedNNUEData[1] = {0x0};
   const unsigned char *const gEmbeddedNNUEEnd = &gEmbeddedNNUEData[1];
@@ -79,12 +83,19 @@ namespace Eval {
 
     string eval_file = string(Options["EvalFile"]);
 
+    #ifdef __EMSCRIPTEN__
+    vector<string> dirs = { "<internal>" };
+
+    #else
+
     #if defined(DEFAULT_NNUE_DIRECTORY)
     #define stringify2(x) #x
     #define stringify(x) stringify2(x)
     vector<string> dirs = { "<internal>" , "" , CommandLine::binaryDirectory , stringify(DEFAULT_NNUE_DIRECTORY) };
     #else
     vector<string> dirs = { "<internal>" , "" , CommandLine::binaryDirectory };
+    #endif
+
     #endif
 
     for (string directory : dirs)

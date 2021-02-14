@@ -112,6 +112,14 @@ namespace Stockfish::Eval::NNUE {
   static constexpr IndexType NumRegs = 16;
   static constexpr IndexType NumPsqtRegs = 2;
 
+  #elif USE_WASM_SIMD
+  typedef __i16x8 vec_t;
+  #define vec_load(a) wasm_v128_load(a)
+  #define vec_store(a,b) wasm_v128_store(a, b)
+  #define vec_add_16(a,b) wasm_i16x8_add(a,b)
+  #define vec_sub_16(a,b) wasm_i16x8_sub(a,b)
+  static constexpr IndexType kNumRegs = 8; // NOTE: certainly wasm implementation dependent
+
   #else
   #undef VECTOR
 
@@ -218,6 +226,22 @@ namespace Stockfish::Eval::NNUE {
 
       for (IndexType p = 0; p < 2; ++p) {
         const IndexType offset = HalfDimensions * p;
+
+  #if defined(USE_WASM_SIMD)
+        {
+          const __i16x8 kLow = wasm_i16x8_splat(0);
+          const __i16x8 kHigh = wasm_i16x8_splat(127);
+          for (IndexType j = 0; j < kHalfDimensions; j += 2 * 8) {
+            __i16x8 x = wasm_v128_load(&accumulation[static_cast<int>(perspectives[p])][0][j + 0 * 8]);
+            __i16x8 y = wasm_v128_load(&accumulation[static_cast<int>(perspectives[p])][0][j + 1 * 8]);
+            x = wasm_i16x8_min(wasm_i16x8_max(x, kLow), kHigh);
+            y = wasm_i16x8_min(wasm_i16x8_max(y, kLow), kHigh);
+            __u8x16 z = wasm_u8x16_narrow_i16x8(x, y);
+            wasm_v128_store(&output[offset + j], z);
+          }
+          continue;
+        }
+  #endif
 
   #if defined(USE_AVX512)
         auto out = reinterpret_cast<__m512i*>(&output[offset]);
