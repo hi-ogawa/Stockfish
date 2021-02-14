@@ -1,0 +1,33 @@
+name: CI
+on: [push]
+jobs:
+  benchmark:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - uses: mymindstorm/setup-emsdk@v8
+        with:
+          version: 2.0.11
+          actions-cache-folder: 'emsdk-cache'
+
+      - name: Build
+        run: make -C src emscripten_build ARCH=wasm wasm_simd_post_mvp=yes
+
+      - name: Install NodeJS
+        uses: actions/setup-node@v2
+        with:
+          node-version: 15
+
+      - name: Print NodeJS/V8 versions
+        run: "node -e 'console.log(`node: ${process.version}\nv8: ${process.versions.v8}`)'"
+
+      - name: Benchmark (classical)
+        run: >
+          node --experimental-wasm-simd --experimental-wasm-threads --wasm-simd-post-mvp src/emscripten/dist/uci.js
+          bench 16 1 25 current depth classical
+
+      - name: Benchmark (NNUE)
+        run: >
+          node --experimental-wasm-simd --experimental-wasm-threads --wasm-simd-post-mvp src/emscripten/dist/uci.js
+          bench 16 1 25 current depth NNUE
