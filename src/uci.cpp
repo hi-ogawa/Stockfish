@@ -243,6 +243,7 @@ void UCI::loop(int argc, char* argv[]) {
 
   do {
       #ifdef __EMSCRIPTEN__
+        argc = 1;
         emscripten_utils_getline(cmd);
       #else
         if (argc == 1 && !getline(cin, cmd)) // Block here waiting for input or EOF
@@ -288,9 +289,6 @@ void UCI::loop(int argc, char* argv[]) {
 
   } while (token != "quit" && argc == 1); // Command line args are one-shot
 
-  #ifdef __EMSCRIPTEN__
-    emscripten_force_exit(0);
-  #endif
 }
 
 

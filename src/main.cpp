@@ -28,7 +28,15 @@
 #include "tt.h"
 #include "uci.h"
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 int main(int argc, char* argv[]) {
+
+  #ifdef __EMSCRIPTEN__
+    EM_ASM({ Module["postCustomMessage"]("background_ready"); });
+  #endif
 
   std::cout << engine_info() << std::endl;
 
@@ -47,5 +55,10 @@ int main(int argc, char* argv[]) {
   UCI::loop(argc, argv);
 
   Threads.set(0);
+
+  #ifdef __EMSCRIPTEN__
+    EM_ASM({ Module["postCustomMessage"]("background_exit"); });
+  #endif
+
   return 0;
 }

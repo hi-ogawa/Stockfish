@@ -10,7 +10,7 @@ EM_JS(const char*, emscripten_utils_getline_impl, (), {
   };
 
   return Asyncify.handleAsync(async () => {
-    const command = await Module.queue.get();
+    const command = await Module.uci_command_queue.get();
     return toHeap(command);
   });
 });

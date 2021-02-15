@@ -7,7 +7,7 @@ bits = 64
 VPATH := $(VPATH):emscripten
 SRCS += emscripten/embedded_nnue.cpp
 EM_FLAGS += \
-	--pre-js emscripten/preample.js \
+	--post-js emscripten/postamble.js \
 	-s MODULARIZE=1 -s EXPORT_NAME="Stockfish" -s ENVIRONMENT=web,worker,node \
 	-s STRICT=1 \
 	-s ASYNCIFY=1 -s 'ASYNCIFY_IMPORTS=["emscripten_utils_getline_impl"]' \
@@ -15,6 +15,8 @@ EM_FLAGS += \
 	-s PROXY_TO_PTHREAD=1 \
 	-s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=$$((1 << 27)) -s MAXIMUM_MEMORY=$$((1 << 31)) \
 	-s FILESYSTEM=0 \
+	-s EXIT_RUNTIME=1 \
+	-s PTHREADS_PROFILING=1 \
 	-s ASSERTIONS=0
 
 ifeq ($(minify_js),no)
