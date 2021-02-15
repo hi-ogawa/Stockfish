@@ -35,7 +35,11 @@ emscripten/embedded_nnue.cpp: net
 	@echo "-- Generate embedded_nnue.cpp --"
 	python emscripten/embedded_nnue.py $(nnuenet) > emscripten/embedded_nnue.cpp
 
-emscripten_build: build
-	mkdir -p emscripten/dist
-	cp emscripten/uci.js stockfish.js stockfish.wasm emscripten/dist
+emscripten_copy_files:
+	rm -rf emscripten/dist
+	mkdir emscripten/dist
+	cp -f stockfish.js stockfish.wasm emscripten/dist
 	cat stockfish.worker.js emscripten/worker-postamble.js > emscripten/dist/stockfish.worker.js
+	cp -f emscripten/uci.js emscripten/index.html emscripten/dist
+
+emscripten_build: build emscripten_copy_files
