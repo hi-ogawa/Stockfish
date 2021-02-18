@@ -1,3 +1,5 @@
-dist
 embedded_nnue.cpp
-.vercel
+public/.vercel
+public/stockfish.js
+public/stockfish.wasm
+public/stockfish.worker.js

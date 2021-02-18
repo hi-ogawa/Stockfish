@@ -12,11 +12,12 @@ $ /usr/bin/node -e 'console.log(`node: ${process.version}\nv8: ${process.version
 node: v15.8.0
 v8: 8.6.395.17-node.23
 
-$ /usr/bin/node --experimental-wasm-{simd,threads} --wasm-simd-post-mvp src/emscripten/dist/uci.js
+$ /usr/bin/node --experimental-wasm-{simd,threads} --wasm-simd-post-mvp src/emscripten/public/uci.js
 
 ## Run on Browser
-$ python src/emscripten/server.py --d src/emscripten/dist
+$ python src/emscripten/server.py --d src/emscripten/public
 
 ## Deploy to Vercel
-(cd src/emscripten && $(yarn global bin)/vercel deploy --prod)
+$ yarn global add vercel
+$ $(yarn global bin)/vercel deploy src/emscripten/public --prod
 ```

@@ -24,10 +24,10 @@ jobs:
 
       - name: Benchmark (classical)
         run: >
-          node --experimental-wasm-simd --experimental-wasm-threads --wasm-simd-post-mvp src/emscripten/dist/uci.js
+          node --experimental-wasm-simd --experimental-wasm-threads --wasm-simd-post-mvp src/emscripten/public/uci.js
           bench 16 1 25 current depth classical
 
       - name: Benchmark (NNUE)
         run: >
-          node --experimental-wasm-simd --experimental-wasm-threads --wasm-simd-post-mvp src/emscripten/dist/uci.js
+          node --experimental-wasm-simd --experimental-wasm-threads --wasm-simd-post-mvp src/emscripten/public/uci.js
           bench 16 1 25 current depth NNUE
