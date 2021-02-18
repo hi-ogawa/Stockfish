@@ -1,10 +1,6 @@
 {
   "builds": [
-    { "src": "/dist/*", "use": "@vercel/static" }
-  ],
-  "rewrites": [
-    { "source": "/", "destination": "/index.html" },
-    { "source": "/:file", "destination": "/dist/:file" }
+    { "src": "*", "use": "@vercel/static" }
   ],
   "headers": [
     {
