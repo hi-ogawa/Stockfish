@@ -1,0 +1,65 @@
+name: Match
+on:
+  workflow_dispatch:
+    inputs:
+      rounds:
+        description: Number of rounds
+        required: true
+        default: 10
+      concurrency:
+        description: Concurrency of matches
+        required: true
+        default: 2
+      time_control:
+        description: Time control (e.g. 10+0.1, 60+0.6, etc...)
+        required: true
+        default: "10+0.1"
+jobs:
+  match:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - uses: mymindstorm/setup-emsdk@v8
+        with:
+          version: 2.0.11
+          actions-cache-folder: 'emsdk-cache'
+
+      - name: Install cutechess-cli
+        run: >
+          sudo apt-get update && sudo apt-get install -y qt5-default &&
+          wget https://github.com/cutechess/cutechess/releases/download/1.2.0/cutechess_20200809+1.2.0+1.2.0-1_amd64.deb &&
+          sudo dpkg -i cutechess_20200809+1.2.0+1.2.0-1_amd64.deb
+
+      - name: Download opening book
+        run: >
+          wget https://github.com/official-stockfish/books/raw/master/noob_3moves.epd.zip && unzip noob_3moves.epd.zip
+
+      - name: Build Stockfish
+        run: make -C src emscripten_build ARCH=wasm wasm_simd_post_mvp=yes
+
+      - name: Install NodeJS
+        uses: actions/setup-node@v2
+        with:
+          node-version: 15
+
+      - name: Print NodeJS/V8 versions
+        run: "node -e 'console.log(`node: ${process.version}\nv8: ${process.versions.v8}`)'"
+
+      - name: Run cutechess-cli
+        run: >
+          cutechess-cli
+          -tournament round-robin
+          -concurrency ${{ github.event.inputs.concurrency }}
+          -rounds ${{ github.event.inputs.rounds }}
+          -openings file=noob_3moves.epd format=epd policy=round -repeat -games 2
+          -draw movenumber=40 movecount=4 score=10
+          -resign movecount=4 score=1000
+          -pgnout result.pgn
+          -each proto=uci
+          -engine tc=${{ github.event.inputs.time_control }} name=engine1 cmd=node arg=--experimental-wasm-simd arg=--experimental-wasm-threads arg=--wasm-simd-post-mvp arg=$PWD/src/emscripten/public/uci.js
+          -engine tc=${{ github.event.inputs.time_control }} name=engine2 cmd=node arg=--experimental-wasm-simd arg=--experimental-wasm-threads arg=--wasm-simd-post-mvp arg=$PWD/src/emscripten/public/uci.js
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: result.pgn
