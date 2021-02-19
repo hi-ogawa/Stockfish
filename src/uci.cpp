@@ -36,6 +36,9 @@
 #include "emscripten/utils.h"
 #endif
 
+// For "bench_eval" command
+#include "emscripten/timeit.hpp"
+
 using namespace std;
 
 namespace Stockfish {
@@ -223,6 +226,11 @@ namespace {
      return int(0.5 + 1000 / (1 + std::exp((a - x) / b)));
   }
 
+  void bench_eval(Position& pos) {
+    auto res = timeit::timeit([&]() { return Eval::evaluate(pos); });
+    std::cout << res << std::endl;
+  }
+
 } // namespace
 
 
@@ -283,6 +291,7 @@ void UCI::loop(int argc, char* argv[]) {
       // Do not use these commands during a search!
       else if (token == "flip")     pos.flip();
       else if (token == "bench")    bench(pos, is, states);
+      else if (token == "bench_eval")  bench_eval(pos);
       else if (token == "d")        sync_cout << pos << sync_endl;
       else if (token == "eval")     trace_eval(pos);
       else if (token == "compiler") sync_cout << compiler_info() << sync_endl;
