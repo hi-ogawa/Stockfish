@@ -84,9 +84,9 @@ class Api {
     this.headers = { authorization: `Bearer ${this.key}` };
   }
 
-  async request(path, method) {
+  async request(path, method, body) {
     const url = this.base + path;
-    const resp = await fetch(url, { method, headers: this.headers });
+    const resp = await fetch(url, { method, body, headers: this.headers });
     if (!resp.ok) {
       const text = await resp.text();
       throw new Error(`fetch failure (${method}, ${url}, ${resp.status}, ${text})`);
@@ -99,8 +99,9 @@ class Api {
     return resp.json();
   }
 
-  async POST(path) {
-    const resp = await this.request(path, 'POST');
+  async POST(path, params) {
+    const body = new URLSearchParams(params);
+    const resp = await this.request(path, 'POST', body);
     return resp.json();
   }
 
@@ -116,6 +117,7 @@ class Api {
   account() { return this.GET('/api/account'); }
   upgrade() { return this.POST('/api/bot/account/upgrade'); }
   streamEvent() { return this.GET_NDJSON('/api/stream/event'); }
+  createChallenge(username, params) { return this.POST(`/api/challenge/${username}`, params); }
   acceptChallenge(challengeId) { return this.POST(`/api/challenge/${challengeId}/accept`); }
   declineChallenge(challengeId) { return this.POST(`/api/challenge/${challengeId}/decline`); }
   streamGame(gameId) { return this.GET_NDJSON(`/api/bot/game/stream/${gameId}`); }
@@ -175,6 +177,13 @@ class EngineWrapper {
     this.send('isready');
     await this.receiveUntil(line => line === 'readyok');
 
+    // TODO:
+    // Sometimes, we see error like this
+    //
+    //  > worker.js onmessage() captured an uncaught exception: RuntimeError: divide by zero
+    //
+    // Is this WASM divide by zero? (cf. https://github.com/emscripten-core/emscripten/issues/4625)
+
     this.send(`go wtime ${wtime} btime ${btime} winc ${winc} binc ${binc}`);
     const lines = await this.receiveUntil(line => line.startsWith('bestmove'));
     const last_line = lines[lines.length - 1];
@@ -218,17 +227,21 @@ class Bot {
     await this.engine.initialize();
 
     this.log(':: Waiting for challenges...');
+
+    // TODO: Handle disconnection in a robust way
     const iterator = await this.api.streamEvent();
+
     for await (const data of iterator) {
       this.log(`[event stream (type = ${data.type})]`, data);
 
       if (data.type === 'challenge') {
-        const { id, challenger, variant, timeControl } = data.challenge;
+        const { id, rated, challenger, variant, timeControl } = data.challenge;
         // Skip our own challenge to someone
         if (challenger.id === this.bot_id) { continue; }
 
         // time ≤ 30min, increment ≤ 30sec
         const ok =
+          !rated && // TODO: Only unrated since it's not stable yet
           (variant.key === 'standard') &&
           (0 <= timeControl.limit) && (timeControl.limit <= 30 * 60) &&
           (0 <= timeControl.increment) && (timeControl.increment <= 30);
@@ -254,7 +267,7 @@ class Bot {
   async playGame(gameId) {
     this.log(`:: Game started [${gameId}]`);
     const iterator = await this.api.streamGame(gameId);
-    const move_overhead = 1000;
+    const move_overhead = 2000;
     let first_line = true;
     let color; // white = 0, black = 1
     let state;

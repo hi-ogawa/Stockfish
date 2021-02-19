@@ -34,19 +34,19 @@ main {
 }
 
 main div:not(:last-child) {
-  margin-bottom: 6px;
+  margin-bottom: 5px;
 }
 
 .ui-input {
-  width: 150px;
+  height: 22px;
   padding: 2px 0 2px 6px;
   border: 1px solid #ddd;
-  border-right: 0;
 }
 
 .ui-button {
+  height: 22px;
   display: inline-block;
-  padding: 3px 8px 3px 8px;
+  padding: 1px 6px 1px 6px;
   background: #888;
   color: #fff;
   font-weight: bold;
@@ -89,6 +89,8 @@ const repr = (x) => {
   return JSON.stringify(x, null, 2);
 }
 
+const stringifyToLine = (obj) => JSON.stringify(obj, null, 1).replace(/\n/g, '');
+
 const App = () => {
   let user_id;
   let is_invalid_key = false;
@@ -101,6 +103,7 @@ const App = () => {
   let bot;
   let tail_mode = true;
   let default_api_key = window.localStorage.getItem('api-key');
+  let challenge = { "username": "ai", "level": 7, "rated": false, "clock.limit": 180, "clock.increment": 1, "color": "random" };
 
   const writeLog = (...args) => {
     for (const arg of args) {
@@ -170,6 +173,29 @@ const App = () => {
     m.redraw();
   };
 
+  const onEditChallenge = () => {
+    const default_value = stringifyToLine(challenge);
+    const result = window.prompt("Edit Challenge", default_value);
+    if (!result) { return; }
+    challenge = JSON.parse(result);
+    m.redraw();
+  };
+
+  const onSendChallenge = () => {
+    writeLog('[Api.createChallenge]');
+    api.createChallenge(challenge.username, challenge)
+    .then(
+      (resp) => {
+        writeLog(resp);
+      },
+      (e) => {
+        writeLog('ERROR', e.toString());
+        console.error(e);
+      }
+    )
+    .finally(m.redraw);
+  };
+
   const oncreate = () => {
     if (default_api_key) {
       $("#api-key").value = default_api_key;
@@ -180,17 +206,15 @@ const App = () => {
     const upgrade_enabled = is_verified && !is_bot;
     const start_enabled = is_bot && !is_running;
     const stop_enabled = is_running;
+    const challenge_enabled = is_running;
 
     return m('main', [
       m('div', [
         m('span', 'API Key: '),
-        m('input#api-key.ui-input'),
+        m('input#api-key.ui-input', { style: 'width: 150px; border-right: 0;' }),
         m('button.ui-button', { onclick: onVerify }, 'Check'),
         ' ',
-        m("span", {
-          style: 'cursor: pointer;',
-          onclick: () => window.alert('For the detail of a bot account creation, please read https://lichess.org/api#operation/botAccountUpgrade.'),
-        }, '(?)')
+        '(', m('a', { href: 'https://lichess.org/api#operation/botAccountUpgrade' }, 'help'), ')'
       ]),
       m('div', [
         m('span', 'Status: '),
@@ -204,9 +228,19 @@ const App = () => {
         ' ',
         m('button.ui-button', start_enabled ? { onclick: onStart } : { class: 'ui-button--disabled' }, 'Start'),
       ]),
-      m("div", [
-          m("span", { style: 'margin-right: 5px;' }, 'Scroll log:'),
-          m("span", { style: 'cursor: pointer;', onclick: () => { tail_mode = !tail_mode; scrollLog(); } }, [
+      m('div', [
+          m('span', 'Challenge: '),
+          m('span', stringifyToLine(challenge)),
+          ' ',
+          m('button.ui-button', { onclick: onEditChallenge }, 'Edit'),
+          ' ',
+          m('button.ui-button', challenge_enabled ? { onclick: onSendChallenge } : { class: 'ui-button--disabled' }, 'Send'),
+          ' ',
+          '(', m('a', { href: 'https://lichess.org/api#operation/challengeCreate' }, 'help'), ')'
+      ]),
+      m('div', [
+          m('span', 'Scroll log: '),
+          m('span', { style: 'cursor: pointer;', onclick: () => { tail_mode = !tail_mode; scrollLog(); } }, [
             tail_mode ? '[x]' : '[ ]'
           ]),
       ]),
