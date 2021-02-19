@@ -161,6 +161,7 @@ const App = () => {
     'stop',
     'd',
     'eval',
+    'position startpos',
     'position fen r1k4r/ppp1bq1p/2n1N3/6B1/3p2Q1/8/PPP2PPP/R5K1 w - - 0 1',
     'setoption name Use NNUE value true',
     'setoption name Use NNUE value false',
@@ -168,6 +169,7 @@ const App = () => {
     'setoption name Threads value 4',
     'bench 16 1 20 current depth NNUE',
     'bench 16 1 20 current depth classical',
+    'bench_eval',
   ];
 
   const sendCommand = () => {
