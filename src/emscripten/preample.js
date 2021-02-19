@@ -4,7 +4,7 @@
 Module["postCustomMessage"] = (data) => {
   // TODO: Acutally want to post only to main worker
   for (let worker of PThread.runningWorkers) {
-    worker.postMessage({ cmd: 'custom', userData: data });
+    worker.postMessage({ 'cmd': 'custom', 'userData': data });
   }
 };
 
@@ -32,7 +32,7 @@ class Queue {
 Module["queue"] = new Queue();
 
 Module["onCustomMessage"] = (data) => {
-  Module.queue.put(data);
+  Module["queue"].put(data);
 };
 
 //
