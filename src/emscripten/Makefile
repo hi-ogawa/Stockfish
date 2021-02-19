@@ -4,6 +4,7 @@ CXX = em++
 comp = clang
 arch = wasm
 bits = 64
+minify_js = yes
 VPATH := $(VPATH):emscripten
 SRCS += emscripten/embedded_nnue.cpp
 EM_FLAGS += \
@@ -17,7 +18,9 @@ EM_FLAGS += \
 	-s FILESYSTEM=0 \
 	-s ASSERTIONS=0
 
-ifeq ($(minify_js),no)
+ifeq ($(minify_js),yes)
+	EM_FLAGS += --closure 1
+else
 	EM_FLAGS += --closure 0 --minify 0
 endif
 
