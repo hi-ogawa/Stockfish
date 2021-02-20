@@ -36,7 +36,7 @@ EXTRACXXFLAGS += -DUSE_POPCNT $(EM_FLAGS)
 
 emscripten/embedded_nnue.cpp: net
 	@echo "-- Generate embedded_nnue.cpp --"
-	python emscripten/embedded_nnue.py $(nnuenet) > emscripten/embedded_nnue.cpp
+	python emscripten/misc/embedded_nnue.py $(nnuenet) > emscripten/embedded_nnue.cpp
 
 emscripten_copy_files:
 	cp -f stockfish.js stockfish.wasm emscripten/public

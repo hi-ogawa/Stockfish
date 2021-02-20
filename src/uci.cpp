@@ -34,10 +34,8 @@
 
 #ifdef __EMSCRIPTEN__
 #include "emscripten/utils.h"
+#include "emscripten/misc/timeit.hpp"
 #endif
-
-// For "bench_eval" command
-#include "emscripten/timeit.hpp"
 
 using namespace std;
 
@@ -226,10 +224,12 @@ namespace {
      return int(0.5 + 1000 / (1 + std::exp((a - x) / b)));
   }
 
+  #ifdef __EMSCRIPTEN__
   void bench_eval(Position& pos) {
     auto res = timeit::timeit([&]() { return Eval::evaluate(pos); });
     std::cout << res << std::endl;
   }
+  #endif
 
 } // namespace
 
@@ -291,10 +291,12 @@ void UCI::loop(int argc, char* argv[]) {
       // Do not use these commands during a search!
       else if (token == "flip")     pos.flip();
       else if (token == "bench")    bench(pos, is, states);
-      else if (token == "bench_eval")  bench_eval(pos);
       else if (token == "d")        sync_cout << pos << sync_endl;
       else if (token == "eval")     trace_eval(pos);
       else if (token == "compiler") sync_cout << compiler_info() << sync_endl;
+      #ifdef __EMSCRIPTEN__
+      else if (token == "bench_eval")  bench_eval(pos);
+      #endif
       else if (token == "export_net") {
           std::optional<std::string> filename;
           std::string f;

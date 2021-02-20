@@ -15,7 +15,7 @@ v8: 8.6.395.17-node.23
 $ /usr/bin/node --experimental-wasm-{simd,threads} --wasm-simd-post-mvp src/emscripten/public/uci.js
 
 ## Run on Browser
-$ python src/emscripten/server.py --d src/emscripten/public
+$ python src/emscripten/misc/server.py --d src/emscripten/public
 
 ## Deploy to Vercel
 $ yarn global add vercel
