@@ -39,6 +39,7 @@ emscripten/embedded_nnue.cpp: net
 	python emscripten/misc/embedded_nnue.py $(nnuenet) > emscripten/embedded_nnue.cpp
 
 emscripten_copy_files:
+	cp -f ../AUTHORS ../Copying.txt emscripten/public
 	cp -f stockfish.js stockfish.wasm emscripten/public
 	cat stockfish.worker.js emscripten/worker-postamble.js > emscripten/public/stockfish.worker.js
 
