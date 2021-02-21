@@ -177,13 +177,6 @@ class EngineWrapper {
     this.send('isready');
     await this.receiveUntil(line => line === 'readyok');
 
-    // TODO:
-    // Sometimes, we see error like this
-    //
-    //  > worker.js onmessage() captured an uncaught exception: RuntimeError: divide by zero
-    //
-    // Is this WASM divide by zero? (cf. https://github.com/emscripten-core/emscripten/issues/4625)
-
     this.send(`go wtime ${wtime} btime ${btime} winc ${winc} binc ${binc}`);
     const lines = await this.receiveUntil(line => line.startsWith('bestmove'));
     const last_line = lines[lines.length - 1];

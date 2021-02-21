@@ -1025,12 +1025,12 @@ moves_loop: // When in check, search starts from here
       movedPiece = pos.moved_piece(move);
       givesCheck = pos.gives_check(move);
 
-      // Indicate PvNodes that will probably fail low if node was searched with non-PV search 
+      // Indicate PvNodes that will probably fail low if node was searched with non-PV search
       // at depth equal or greater to current depth and result of this search was far below alpha
-      bool likelyFailLow =    PvNode 
-                           && ttMove 
-                           && (tte->bound() & BOUND_UPPER) 
-                           && ttValue < alpha + 200 + 100 * depth 
+      bool likelyFailLow =    PvNode
+                           && ttMove
+                           && (tte->bound() & BOUND_UPPER)
+                           && ttValue < alpha + 200 + 100 * depth
                            && tte->depth() >= depth;
 
       // Calculate new depth for this move
@@ -1180,7 +1180,7 @@ moves_loop: // When in check, search starts from here
           if (th.marked())
               r++;
 
-          // Decrease reduction if position is or has been on the PV 
+          // Decrease reduction if position is or has been on the PV
           // and node is not likely to fail low (~10 Elo)
           if (ss->ttPv && !likelyFailLow)
               r -= 2;
@@ -1879,6 +1879,10 @@ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
 
   std::stringstream ss;
   TimePoint elapsed = Time.elapsed() + 1;
+  // Cf. https://github.com/niklasf/stockfish.wasm/issues/5
+  #if __EMSCRIPTEN__
+    elapsed = std::max(elapsed, TimePoint(1));
+  #endif
   const RootMoves& rootMoves = pos.this_thread()->rootMoves;
   size_t pvIdx = pos.this_thread()->pvIdx;
   size_t multiPV = std::min((size_t)Options["MultiPV"], rootMoves.size());
