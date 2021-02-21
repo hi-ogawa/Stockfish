@@ -1,6 +1,6 @@
 {
   "name": "stockfish-nnue.wasm",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Stockfish with NNUE evaluation by WASM SIMD backend",
   "author": "Hiroshi Ogawa",
   "license": "GPL-3.0",
