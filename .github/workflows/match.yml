@@ -14,6 +14,15 @@ on:
         description: Time control (e.g. 10+0.1, 60+0.6, etc...)
         required: true
         default: "10+0.1"
+      extra:
+        description: Extra options
+        required: false
+      extra_engine1:
+        description: Extra 1st engine option
+        required: false
+      extra_engine2:
+        description: Extra 2nd engine option
+        required: false
 jobs:
   match:
     runs-on: ubuntu-20.04
@@ -56,9 +65,10 @@ jobs:
           -draw movenumber=40 movecount=4 score=10
           -resign movecount=4 score=1000
           -pgnout result.pgn
+          ${{ github.event.inputs.extra }}
           -each proto=uci
-          -engine tc=${{ github.event.inputs.time_control }} name=engine1 cmd=node arg=--experimental-wasm-simd arg=--experimental-wasm-threads arg=--wasm-simd-post-mvp arg=$PWD/src/emscripten/public/uci.js
-          -engine tc=${{ github.event.inputs.time_control }} name=engine2 cmd=node arg=--experimental-wasm-simd arg=--experimental-wasm-threads arg=--wasm-simd-post-mvp arg=$PWD/src/emscripten/public/uci.js
+          -engine ${{ github.event.inputs.extra_engine1 }} tc=${{ github.event.inputs.time_control }} name=engine1 cmd=node arg=--experimental-wasm-simd arg=--experimental-wasm-threads arg=--wasm-simd-post-mvp arg=$PWD/src/emscripten/public/uci.js
+          -engine ${{ github.event.inputs.extra_engine2 }} tc=${{ github.event.inputs.time_control }} name=engine2 cmd=node arg=--experimental-wasm-simd arg=--experimental-wasm-threads arg=--wasm-simd-post-mvp arg=$PWD/src/emscripten/public/uci.js
 
       - uses: actions/upload-artifact@v2
         with:
