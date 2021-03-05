@@ -65,7 +65,11 @@ const runMany = async () => {
   const n = Number(params.get('n'));
   if (n <= 0) { return; }
 
-  const command = 'bench 128 2 2 current depth NNUE';
+  const memory = Number(params.get('memory')) || 16;
+  const thread = Number(params.get('thread')) || 1;
+  const depth = Number(params.get('depth')) || 1;
+
+  const command = `bench ${memory} ${thread} ${depth} current depth NNUE`;
   const wait = line => line.startsWith('Nodes/second');
 
   console.log(`--------------`);
