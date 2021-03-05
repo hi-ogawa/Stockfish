@@ -4,7 +4,13 @@ CXX = em++
 comp = clang
 arch = wasm
 bits = 64
+
+# Build options
+wasm_simd = no
+wasm_simd_post_mvp = no
 minify_js = yes
+assertion = no
+
 VPATH := $(VPATH):emscripten
 SRCS += emscripten/embedded_nnue.cpp
 EM_FLAGS += \
@@ -15,13 +21,18 @@ EM_FLAGS += \
 	-s USE_PTHREADS=1 \
 	-s PROXY_TO_PTHREAD=1 \
 	-s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=$$((1 << 27)) -s MAXIMUM_MEMORY=$$((1 << 31)) \
-	-s FILESYSTEM=0 \
-	-s ASSERTIONS=0
+	-s FILESYSTEM=0
 
 ifeq ($(minify_js),yes)
 	EM_FLAGS += --closure 1
 else
 	EM_FLAGS += --closure 0 --minify 0
+endif
+
+ifeq ($(assertion),yes)
+	EM_FLAGS += -s ASSERTIONS=1
+else
+	EM_FLAGS += -s ASSERTIONS=0
 endif
 
 ifeq ($(wasm_simd_post_mvp),yes)
