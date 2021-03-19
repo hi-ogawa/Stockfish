@@ -2,7 +2,7 @@ Build
 
 ```
 ## Enable emscripten tools
-$ source <path-to-emsdk-repo>/emsdk.sh
+$ source <path-to-emsdk-repo>/emsdk_env.sh
 
 ## Build
 $ make -C src emscripten_build ARCH=wasm wasm_simd_post_mvp=yes
