@@ -8,7 +8,7 @@ For development, see [src/emscripten/README.md](src/emscripten/README.md).
 
 ## Overview
 
-[![Build Status](https://travis-ci.org/official-stockfish/Stockfish.svg?branch=master)](https://travis-ci.org/official-stockfish/Stockfish)
+[![Build Status](https://github.com/official-stockfish/Stockfish/actions/workflows/stockfish.yml/badge.svg)](https://github.com/official-stockfish/Stockfish/actions)
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/official-stockfish/Stockfish?branch=master&svg=true)](https://ci.appveyor.com/project/mcostalba/stockfish/branch/master)
 
 [Stockfish](https://stockfishchess.org) is a free, powerful UCI chess engine
@@ -29,13 +29,13 @@ intrinsics available on most CPUs (sse2, avx2, neon, or similar).
 
 This distribution of Stockfish consists of the following files:
 
-  * Readme.md, the file you are currently reading.
+  * [Readme.md](https://github.com/official-stockfish/Stockfish/blob/master/README.md), the file you are currently reading.
 
-  * Copying.txt, a text file containing the GNU General Public License version 3.
+  * [Copying.txt](https://github.com/official-stockfish/Stockfish/blob/master/Copying.txt), a text file containing the GNU General Public License version 3.
 
-  * AUTHORS, a text file with the list of authors for the project
+  * [AUTHORS](https://github.com/official-stockfish/Stockfish/blob/master/AUTHORS), a text file with the list of authors for the project
 
-  * src, a subdirectory containing the full source code, including a Makefile
+  * [src](https://github.com/official-stockfish/Stockfish/tree/master/src), a subdirectory containing the full source code, including a Makefile
     that can be used to compile Stockfish on Unix-like systems.
 
   * a file with the .nnue extension, storing the neural network for the NNUE
@@ -43,12 +43,14 @@ This distribution of Stockfish consists of the following files:
 
 ## The UCI protocol and available options
 
-The Universal Chess Interface (UCI) is a standard protocol used to communicate with a chess engine,
-and is the recommended way to do so for typical graphical user interfaces (GUI) or chess tools.
+The Universal Chess Interface (UCI) is a standard protocol used to communicate with
+a chess engine, and is the recommended way to do so for typical graphical user interfaces
+(GUI) or chess tools. Stockfish implements the majority of it options as described
+in [the UCI protocol](https://www.shredderchess.com/download/div/uci.zip).
 
-Stockfish implements most commands as described in [the UCI protocol](https://www.shredderchess.com/download/div/uci.zip)
-
-For users, the following UCI options, which can typically be set via a GUI, are available in Stockfish:
+Developers can see the default values for UCI options available in Stockfish by typing
+`./stockfish uci` in a terminal, but the majority of users will typically see them and
+change them via a chess GUI. This is a list of available UCI options in Stockfish:
 
   * #### Threads
     The number of CPU threads used for searching a position. For best performance, set
@@ -126,14 +128,6 @@ For users, the following UCI options, which can typically be set via a GUI, are 
     Limit Syzygy tablebase probing to positions with at most this many pieces left
     (including kings and pawns).
 
-  * #### Contempt
-    A positive value for contempt favors middle game positions and avoids draws,
-    effective for the classical evaluation only.
-
-  * #### Analysis Contempt
-    By default, contempt is set to prefer the side to move. Set this option to "White"
-    or "Black" to analyse with contempt for that side, or "Off" to disable contempt.
-
   * #### Move Overhead
     Assume a time delay of x ms due to network and GUI overheads. This is useful to
     avoid losses on time in those cases.
@@ -151,9 +145,9 @@ For users, the following UCI options, which can typically be set via a GUI, are 
 
 For developers the following non-standard commands might be of interest, mainly useful for debugging:
 
-  * #### bench ttSize threads limit fenFile limitType evalType
-    Performs a standard benchmark using various options. The signature or standard node
-    count is obtained using all defaults. `bench` is currently `bench 16 1 13 default depth mixed`.
+  * #### bench *ttSize threads limit fenFile limitType evalType*
+    Performs a standard benchmark using various options. The signature of a version (standard node
+    count) is obtained using all defaults. `bench` is currently `bench 16 1 13 default depth mixed`.
 
   * #### compiler
     Give information about the compiler and environment used for building a binary.
@@ -338,4 +332,4 @@ you are distributing. If you make any changes to the source code,
 these changes must also be made available under the GPL.
 
 For full details, read the copy of the GPL v3 found in the file named
-*Copying.txt*.
+[*Copying.txt*](https://github.com/official-stockfish/Stockfish/blob/master/Copying.txt).
