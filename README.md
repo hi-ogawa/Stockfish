@@ -8,7 +8,7 @@ For development, see [src/emscripten/README.md](src/emscripten/README.md).
 
 ## Overview
 
-[![Build Status](https://travis-ci.org/official-stockfish/Stockfish.svg?branch=master)](https://travis-ci.org/official-stockfish/Stockfish)
+[![Build Status](https://github.com/official-stockfish/Stockfish/actions/workflows/stockfish.yml/badge.svg)](https://github.com/official-stockfish/Stockfish/actions)
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/official-stockfish/Stockfish?branch=master&svg=true)](https://ci.appveyor.com/project/mcostalba/stockfish/branch/master)
 
 [Stockfish](https://stockfishchess.org) is a free, powerful UCI chess engine
@@ -29,30 +29,28 @@ intrinsics available on most CPUs (sse2, avx2, neon, or similar).
 
 This distribution of Stockfish consists of the following files:
 
-  * Readme.md, the file you are currently reading.
+  * [Readme.md](https://github.com/official-stockfish/Stockfish/blob/master/README.md), the file you are currently reading.
 
-  * Copying.txt, a text file containing the GNU General Public License version 3.
+  * [Copying.txt](https://github.com/official-stockfish/Stockfish/blob/master/Copying.txt), a text file containing the GNU General Public License version 3.
 
-  * src, a subdirectory containing the full source code, including a Makefile
+  * [AUTHORS](https://github.com/official-stockfish/Stockfish/blob/master/AUTHORS), a text file with the list of authors for the project
+
+  * [src](https://github.com/official-stockfish/Stockfish/tree/master/src), a subdirectory containing the full source code, including a Makefile
     that can be used to compile Stockfish on Unix-like systems.
 
-  * a file with the .nnue extension, storing the neural network for the NNUE 
+  * a file with the .nnue extension, storing the neural network for the NNUE
     evaluation. Binary distributions will have this file embedded.
 
-Note: to use the NNUE evaluation, the additional data file with neural network parameters
-needs to be available. Normally, this file is already embedded in the binary or it can be downloaded.
-The filename for the default (recommended) net can be found as the default
-value of the `EvalFile` UCI option, with the format `nn-[SHA256 first 12 digits].nnue`
-(for instance, `nn-c157e0a5755b.nnue`). This file can be downloaded from
-```
-https://tests.stockfishchess.org/api/nn/[filename]
-```
-replacing `[filename]` as needed.
+## The UCI protocol and available options
 
+The Universal Chess Interface (UCI) is a standard protocol used to communicate with
+a chess engine, and is the recommended way to do so for typical graphical user interfaces
+(GUI) or chess tools. Stockfish implements the majority of it options as described
+in [the UCI protocol](https://www.shredderchess.com/download/div/uci.zip).
 
-## UCI options
-
-Currently, Stockfish has the following UCI options:
+Developers can see the default values for UCI options available in Stockfish by typing
+`./stockfish uci` in a terminal, but the majority of users will typically see them and
+change them via a chess GUI. This is a list of available UCI options in Stockfish:
 
   * #### Threads
     The number of CPU threads used for searching a position. For best performance, set
@@ -60,6 +58,9 @@ Currently, Stockfish has the following UCI options:
 
   * #### Hash
     The size of the hash table in MB. It is recommended to set Hash after setting Threads.
+
+  * #### Clear Hash
+    Clear the hash table.
 
   * #### Ponder
     Let Stockfish ponder its next move while the opponent is thinking.
@@ -117,7 +118,7 @@ Currently, Stockfish has the following UCI options:
   * #### SyzygyProbeDepth
     Minimum remaining search depth for which a position is probed. Set this option
     to a higher value to probe less aggressively if you experience too much slowdown
-    (in terms of nps) due to TB probing.
+    (in terms of nps) due to tablebase probing.
 
   * #### Syzygy50MoveRule
     Disable to let fifty-move rule draws detected by Syzygy tablebase probes count
@@ -126,14 +127,6 @@ Currently, Stockfish has the following UCI options:
   * #### SyzygyProbeLimit
     Limit Syzygy tablebase probing to positions with at most this many pieces left
     (including kings and pawns).
-
-  * #### Contempt
-    A positive value for contempt favors middle game positions and avoids draws,
-    effective for the classical evaluation only.
-
-  * #### Analysis Contempt
-    By default, contempt is set to prefer the side to move. Set this option to "White"
-    or "Black" to analyse with contempt for that side, or "Off" to disable contempt.
 
   * #### Move Overhead
     Assume a time delay of x ms due to network and GUI overheads. This is useful to
@@ -147,13 +140,38 @@ Currently, Stockfish has the following UCI options:
     Tells the engine to use nodes searched instead of wall time to account for
     elapsed time. Useful for engine testing.
 
-  * #### Clear Hash
-    Clear the hash table.
-
   * #### Debug Log File
     Write all communication to and from the engine into a text file.
 
-## A note on classical and NNUE evaluation
+For developers the following non-standard commands might be of interest, mainly useful for debugging:
+
+  * #### bench *ttSize threads limit fenFile limitType evalType*
+    Performs a standard benchmark using various options. The signature of a version (standard node
+    count) is obtained using all defaults. `bench` is currently `bench 16 1 13 default depth mixed`.
+
+  * #### compiler
+    Give information about the compiler and environment used for building a binary.
+
+  * #### d
+    Display the current position, with ascii art and fen.
+
+  * #### eval
+    Return the evaluation of the current position.
+
+  * #### export_net [filename]
+    Exports the currently loaded network to a file.
+    If the currently loaded network is the embedded network and the filename
+    is not specified then the network is saved to the file matching the name
+    of the embedded network, as defined in evaluate.h.
+    If the currently loaded network is not the embedded network (some net set
+    through the UCI setoption) then the filename parameter is required and the
+    network is saved into that file.
+
+  * #### flip
+    Flips the side to move.
+
+
+## A note on classical evaluation versus NNUE evaluation
 
 Both approaches assign a value to a position that is used in alpha-beta (PVS) search
 to find the best move. The classical evaluation computes this value as a function
@@ -166,22 +184,33 @@ The NNUE evaluation was first introduced in shogi, and ported to Stockfish after
 It can be evaluated efficiently on CPUs, and exploits the fact that only parts
 of the neural network need to be updated after a typical chess move.
 [The nodchip repository](https://github.com/nodchip/Stockfish) provides additional
-tools to train and develop the NNUE networks.
+tools to train and develop the NNUE networks. On CPUs supporting modern vector instructions
+(avx2 and similar), the NNUE evaluation results in much stronger playing strength, even
+if the nodes per second computed by the engine is somewhat lower (roughly 80% of nps
+is typical).
 
-On CPUs supporting modern vector instructions (avx2 and similar), the NNUE evaluation
-results in stronger playing strength, even if the nodes per second computed by the engine
-is somewhat lower (roughly 60% of nps is typical).
+Notes:
 
-Note that the NNUE evaluation depends on the Stockfish binary and the network parameter
-file (see EvalFile). Not every parameter file is compatible with a given Stockfish binary.
-The default value of the EvalFile UCI option is the name of a network that is guaranteed
-to be compatible with that binary.
+1) the NNUE evaluation depends on the Stockfish binary and the network parameter
+file (see the EvalFile UCI option). Not every parameter file is compatible with a given
+Stockfish binary, but the default value of the EvalFile UCI option is the name of a network
+that is guaranteed to be compatible with that binary.
 
-## What to expect from Syzygybases?
+2) to use the NNUE evaluation, the additional data file with neural network parameters
+needs to be available. Normally, this file is already embedded in the binary or it
+can be downloaded. The filename for the default (recommended) net can be found as the default
+value of the `EvalFile` UCI option, with the format `nn-[SHA256 first 12 digits].nnue`
+(for instance, `nn-c157e0a5755b.nnue`). This file can be downloaded from
+```
+https://tests.stockfishchess.org/api/nn/[filename]
+```
+replacing `[filename]` as needed.
+
+## What to expect from the Syzygy tablebases?
 
 If the engine is searching a position that is not in the tablebases (e.g.
 a position with 8 pieces), it will access the tablebases during the search.
-If the engine reports a very large score (typically 153.xx), this means 
+If the engine reports a very large score (typically 153.xx), this means
 it has found a winning line into a tablebase position.
 
 If the engine is given a position to search that is in the tablebases, it
@@ -195,9 +224,9 @@ will not report a mate score, even if the position is known to be won.**
 It is therefore clear that this behaviour is not identical to what one might
 be used to with Nalimov tablebases. There are technical reasons for this
 difference, the main technical reason being that Nalimov tablebases use the
-DTM metric (distance-to-mate), while Syzygybases use a variation of the
+DTM metric (distance-to-mate), while the Syzygy tablebases use a variation of the
 DTZ metric (distance-to-zero, zero meaning any move that resets the 50-move
-counter). This special metric is one of the reasons that Syzygybases are
+counter). This special metric is one of the reasons that the Syzygy tablebases are
 more compact than Nalimov tablebases, while still storing all information
 needed for optimal play and in addition being able to take into account
 the 50-move rule.
@@ -248,9 +277,9 @@ When not using the Makefile to compile (for instance, with Microsoft MSVC) you
 need to manually set/unset some switches in the compiler command line; see
 file *types.h* for a quick reference.
 
-When reporting an issue or a bug, please tell us which version and
-compiler you used to create your executable. These informations can
-be found by typing the following commands in a console:
+When reporting an issue or a bug, please tell us which Stockfish version
+and which compiler you used to create your executable. This information
+can be found by typing the following command in a console:
 
 ```
     ./stockfish compiler
@@ -258,8 +287,8 @@ be found by typing the following commands in a console:
 
 ## Understanding the code base and participating in the project
 
-Stockfish's improvement over the last couple of years has been a great
-community effort. There are a few ways to help contribute to its growth.
+Stockfish's improvement over the last decade has been a great community
+effort. There are a few ways to help contribute to its growth.
 
 ### Donating hardware
 
@@ -280,8 +309,9 @@ generic rather than being focused on Stockfish's precise implementation.
 Nevertheless, a helpful resource.
 
 * The latest source can always be found on [GitHub](https://github.com/official-stockfish/Stockfish).
-Discussions about Stockfish take place in the [FishCooking](https://groups.google.com/forum/#!forum/fishcooking)
-group and engine testing is done on [Fishtest](https://tests.stockfishchess.org/tests).
+Discussions about Stockfish take place these days mainly in the [FishCooking](https://groups.google.com/forum/#!forum/fishcooking)
+group and on the [Stockfish Discord channel](https://discord.gg/nv8gDtt).
+The engine testing is done on [Fishtest](https://tests.stockfishchess.org/tests).
 If you want to help improve Stockfish, please read this [guideline](https://github.com/glinscott/fishtest/wiki/Creating-my-first-test)
 first, where the basics of Stockfish development are explained.
 
@@ -296,9 +326,10 @@ it (either by itself or as part of some bigger software package), or
 using it as the starting point for a software project of your own.
 
 The only real limitation is that whenever you distribute Stockfish in
-some way, you must always include the full source code, or a pointer
-to where the source code can be found. If you make any changes to the
-source code, these changes must also be made available under the GPL.
+some way, you MUST always include the full source code, or a pointer
+to where the source code can be found, to generate the exact binary
+you are distributing. If you make any changes to the source code,
+these changes must also be made available under the GPL.
 
 For full details, read the copy of the GPL v3 found in the file named
-*Copying.txt*.
+[*Copying.txt*](https://github.com/official-stockfish/Stockfish/blob/master/Copying.txt).
