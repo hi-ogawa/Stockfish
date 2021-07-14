@@ -114,11 +114,18 @@ namespace Stockfish::Eval::NNUE {
 
   #elif USE_WASM_SIMD
   typedef __i16x8 vec_t;
+  typedef __i32x4 psqt_vec_t;
   #define vec_load(a) wasm_v128_load(a)
   #define vec_store(a,b) wasm_v128_store(a, b)
   #define vec_add_16(a,b) wasm_i16x8_add(a,b)
   #define vec_sub_16(a,b) wasm_i16x8_sub(a,b)
+  #define vec_load_psqt(a) wasm_v128_load(a)
+  #define vec_store_psqt(a,b) wasm_v128_store(a, b)
+  #define vec_add_psqt_32(a,b) wasm_i32x4_add(a,b)
+  #define vec_sub_psqt_32(a,b) wasm_i32x4_sub(a,b)
+  #define vec_zero_psqt() wasm_i64x2_const(0)
   static constexpr IndexType kNumRegs = 8; // NOTE: certainly wasm implementation dependent
+  static constexpr IndexType NumPsqtRegs = 2;
 
   #else
   #undef VECTOR

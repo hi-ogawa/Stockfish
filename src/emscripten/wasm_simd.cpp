@@ -107,8 +107,8 @@ void affine(const int8_t A[m][n], const uint8_t x[n], const int32_t b[m], int32_
 }
 
 // Explicit instantiation
-template void affine<512, 32>(const int8_t A[32][512], const uint8_t x[512], const int32_t b[32], int32_t y[32]);
-template void affine< 32, 32>(const int8_t A[32][ 32], const uint8_t x[ 32], const int32_t b[32], int32_t y[32]);
-template void affine< 32,  1>(const int8_t A[ 1][ 32], const uint8_t x[ 32], const int32_t b[ 1], int32_t y[ 1]);
+template void affine<1024, 16>(const int8_t A[16][1024], const uint8_t x[1024], const int32_t b[16], int32_t y[16]);
+template void affine<  16, 32>(const int8_t A[32][  16], const uint8_t x[  16], const int32_t b[32], int32_t y[32]);
+template void affine<  32,  1>(const int8_t A[ 1][  32], const uint8_t x[  32], const int32_t b[ 1], int32_t y[ 1]);
 
 } // namespace emscripten_wasm_simd
