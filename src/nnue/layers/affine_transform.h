@@ -118,15 +118,15 @@ namespace Stockfish::Eval::NNUE::Layers {
 #if defined(USE_WASM_SIMD)
       {
         // Simplify variable names (y = Ax + b)
-        static_assert(kInputDimensions % 16 == 0);
-        static_assert(kInputDimensions == kPaddedInputDimensions);
-        constexpr int n = kInputDimensions;
-        constexpr int m = kOutputDimensions;
-        auto A = *reinterpret_cast<const int8_t(*)[m][n]>(weights_);
+        static_assert(InputDimensions % 16 == 0);
+        constexpr int n = InputDimensions;
+        constexpr int m = OutputDimensions;
+        constexpr int instride = PaddedInputDimensions;
+        auto A = *reinterpret_cast<const int8_t(*)[m][instride]>(weights_);
         auto x = *reinterpret_cast<const uint8_t(*)[n]>(input);
         auto b = *reinterpret_cast<const int32_t(*)[m]>(biases_);
         auto y = *reinterpret_cast<int32_t(*)[m]>(buffer);
-        emscripten_wasm_simd::affine<n, m>(A, x, b, y);
+        emscripten_wasm_simd::affine<n, m, instride>(A, x, b, y);
         return y;
       }
 #endif

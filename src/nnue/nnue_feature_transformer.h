@@ -122,8 +122,7 @@ namespace Stockfish::Eval::NNUE {
   #define vec_add_psqt_32(a,b) wasm_i32x4_add(a,b)
   #define vec_sub_psqt_32(a,b) wasm_i32x4_sub(a,b)
   #define vec_zero_psqt() wasm_i64x2_const(0)
-  static constexpr IndexType kNumRegs = 8; // NOTE: certainly wasm implementation dependent
-  static constexpr IndexType NumPsqtRegs = 2;
+  #define NumRegistersSIMD 8 // NOTE: certainly wasm implementation dependent
 
   #else
   #undef VECTOR
@@ -249,7 +248,7 @@ namespace Stockfish::Eval::NNUE {
       {
           const __i16x8 kLow = wasm_i16x8_splat(0);
           const __i16x8 kHigh = wasm_i16x8_splat(127);
-          for (IndexType j = 0; j < kHalfDimensions; j += 2 * 8) {
+          for (IndexType j = 0; j < HalfDimensions; j += 2 * 8) {
             __i16x8 x = wasm_v128_load(&accumulation[static_cast<int>(perspectives[p])][0][j + 0 * 8]);
             __i16x8 y = wasm_v128_load(&accumulation[static_cast<int>(perspectives[p])][0][j + 1 * 8]);
             x = wasm_i16x8_min(wasm_i16x8_max(x, kLow), kHigh);
